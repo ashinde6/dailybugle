@@ -43,6 +43,16 @@
             color: #555;
         }
 
+        .add-article-button {
+            padding: 0.5em 1em;
+            background-color: #4c74af;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
         .login-button {
             padding: 0.5em 1em;
             background-color: #4c74af;
@@ -52,17 +62,53 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
+        .signout-button {
+            padding: 0.5em 1em;
+            border-color: #4c74af;
+            color: #4c74af;
+            text-decoration: none;
+            border: none;
+            border-radius: 4px;
+            border-width: 2px;
+            cursor: pointer;
+        }
+
+        #profile-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
     </style>
 </head>
-<body>
-
+<body onload="initPage()">
     <header>
         <h1 style="color: black; font-family: 'Lobster', sans-serif; font-size: 50px; flex: 1;">Daily Bugle</h1>
-        <button class="login-button" onclick="window.location.href = 'bugle.html';">Login</button>
+        <button id="login-button" class="login-button" onclick="window.location.href = 'bugle.html';" style="display: none;">Login</button>
+        <img id="profile-icon" src="profile.jpg" alt="Profile Icon">
+        <span id="name" style="display: none;"></span>
+        <button id="signOutButton" class="signout-button" style="display: none;" onclick="signout()">Sign Out</button>
     </header>
 
     <main>
-        <article>
+        <div id="author-content" style="display: none;"> 
+            <div id="authorArticles">
+                <div style="display: flex; align-items: center;">
+                    <h2 style="margin-right: 10px;">Your Articles</h2>
+                    <button id="addArticleButton" class="add-article-button">+</button>
+                </div>
+                <hr>
+                <ul id="articleList">
+                    <!-- Article items will be dynamically added here -->
+                </ul>
+            </div>
+        </div>
+
+        <div id="reader-content" style="display: none;">
+            <p>Reader View</p>
+        </div>
+        <!-- <article>
             <h2>Breaking News: Example Headline</h2>
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
         </article>
@@ -71,8 +117,9 @@
             <h2>Another News Article</h2>
             <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
         </article>
-        <!-- Add more articles as needed -->
+        Add more articles as needed -->
     </main>
 
 </body>
 </html>
+<script src="functions.js"></script>

@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', function () {
         
         var status = response.status;
 
+        var res = await response.json();
+        var token = res.token;
+
+        localStorage.setItem('jwtToken', token);
+
+        window.location.href = 'http://localhost:8080/dailybugle/home.html';
+
         if (status === 401) {
             document.getElementById('invalid_user').innerHTML = "Invalid username or password, please try again";
             document.getElementById('invalid_user').style.display = 'block';
@@ -83,8 +90,5 @@ function createAccount() {
       }
 }
 
-function redirectToLogin() {
-    // Redirect to the login page
-    window.location.href = 'bugle.html';
-}
+
 

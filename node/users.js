@@ -4,6 +4,7 @@ const express = require('express');
 const session = require('express-session');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -41,9 +42,8 @@ app.post('/register', async (req, res) => {
     const usersCollection = client.db('dailybugle').collection('users');
     const result = await usersCollection.insertOne({ email: email, username: username, password: hashedPassword, role: role });
 
-    // res.status(201).send('User registered successfully');
-    req.session.user = { username: username }
-    res.redirect('/home');
+    const token = jwt.sign({ username: username, role: role }, secretKey, { expiresIn: '1h' });
+    res.json({ token });
   }
 });
 
@@ -56,13 +56,20 @@ app.post('/login', async (req, res) => {
   if (!user || !(await bcrypt.compare(password, user.password))) {
     res.status(401).send('Invalid username or password');
   } else {
-    // res.status(200).send('Login successful');
-    req.session.user = { username: username }
-    res.redirect('localhost:8080/api/users/home');
+    const token = jwt.sign({ username: username, role: user.role }, secretKey, { expiresIn: '1h' });
+    res.json({ token });
   }
 });
 
-app.get('/localhost:8080/api/users/home', (req, res) => {
-  console.log('Hi');
+app.post('/verifyToken', async (req, res) => {
+  const token = req.body.token;
+  console.log(token);
+  try {
+    const decodedToken = jwt.verify(token, secretKey);
+    console.log(decodedToken);
+    res.json({ success: true, username: decodedToken.username, role: decodedToken.role });
+  } catch (error) {
+    res.json({ success: false, error: 'Invalid token' });
+  }
 })
 
