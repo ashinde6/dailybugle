@@ -1,6 +1,8 @@
 const endpoint = {};
 endpoint.verifyToken='http://localhost:8080/api/users/verifyToken';
 endpoint.articles='http://localhost:8080/api/users/articles';
+endpoint.getArticles = 'http://localhost:8080/api/users/getArticles'; 
+endpoint.readerArticles = 'http://localhost:8080/api/users/readerArticles';  
 
 async function verifyToken(token) {
     const response = await fetch(endpoint.verifyToken, {
@@ -26,6 +28,7 @@ async function initPage() {
         document.getElementById('login-button').style.display = 'inline-block';
     } else {
         document.getElementById('signOutButton').style.display = 'inline-block';
+        document.getElementById('profile-icon').style.display = 'inline-block';
         document.getElementById('name').style.display = 'inline-block';
         try {
             const result = await verifyToken(userToken);
@@ -39,18 +42,142 @@ async function initPage() {
         } catch(error) {
             console.error(error);
         }
-        
     }
+
+    loadReaderContent();
 }
 
-function loadAuthorContent() {
+async function loadAuthorContent() {
     document.getElementById('author-content').style.display = 'block';
 
+    let authorID = "";
+    const userToken = localStorage.getItem('jwtToken');
+
+    try {
+        const result = await verifyToken(userToken);
+        authorID = result.userId;
+    } catch(error) {
+        console.error(error);
+    }
+
+    var response = await fetch(endpoint.getArticles, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ authorId: authorID }),
+    })
+    .then(res => res.json())
+    .then(documents => {
+        displayArticles(documents, "articleList");
+    });
+}
+
+function displayArticles(documents, list) {
+    const articleList = document.getElementById(list);
+    console.log(documents);
+
+    Object.values(documents.documents).forEach(element => {
+        const title = element.title;
+        const content = element.content;
+        const date = element.date;
+        
+        let list = document.createElement('ul');
+        let span=document.createElement('span');
+
+        span.innerHTML = title;
+        span.style = "font-weight:bold";
+        list.append(span);
+        list.append(document.createElement('br'));
+        list.append(document.createElement('br'));
+
+        let cont = document.createElement('span');
+        cont.innerHTML = content;
+        list.append(cont);
+        list.append(document.createElement('br'));
+        list.append(document.createElement('br'));
+
+        let d = document.createElement('span');
+        d.innerHTML = date.toLocaleString();
+        list.append(date);
+        list.append(document.createElement('br'));
+        list.append(document.createElement('br'));
+        list.append(document.createElement('br'));
+        
+        articleList.appendChild(list);
+    });
+}
+
+function openAddArticleModal() {
+    document.getElementById('addArticleModal').style.display = 'block';
+}
+
+function closeAddArticleModal() {
+    document.getElementById('addArticleModal').style.display = 'none';
+    location.reload();
+}
+
+async function addArticle() {
+    let title = document.getElementById('articleTitle').value;
+    let content = document.getElementById('articleContent').value;
+
+    const inputImage = document.getElementById('articleImage');
+    const uploadedImage = inputImage.files[0];
+    let imageData = "";
+
+    if (uploadedImage) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            imageData = e.target.result;
+        };
+
+        // Read the content of the uploaded image
+        reader.readAsDataURL(uploadedImage);
+    }
+
+    const date = new Date();
+    
+    let authorID = "";
+    const userToken = localStorage.getItem('jwtToken');
+
+    try {
+        const result = await verifyToken(userToken);
+        authorID = result.userId;
+    } catch(error) {
+        console.error(error);
+    }
+
+    var response = await fetch(endpoint.articles, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: title, content: content, image: imageData, date: date, authorId: authorID }),
+    });
+
+    closeAddArticleModal();
 }
 
 function loadReaderContent() {
     document.getElementById('reader-content').style.display = 'block';
+    loadArticles();
 }
+
+
+async function loadArticles() {
+    var response = await fetch(endpoint.readerArticles, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content: "get Articles" })
+    })
+    .then(res => res.json())
+    .then(documents => {
+        displayArticles(documents, "articleReaderList");
+    });
+}
+
 
 function signout() {
     localStorage.removeItem('jwtToken');

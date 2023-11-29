@@ -56,7 +56,7 @@ app.post('/login', async (req, res) => {
   if (!user || !(await bcrypt.compare(password, user.password))) {
     res.status(401).send('Invalid username or password');
   } else {
-    const token = jwt.sign({ username: username, role: user.role }, secretKey, { expiresIn: '1h' });
+    const token = jwt.sign({ username: username, role: user.role, userId: user._id }, secretKey, { expiresIn: '1h' });
     res.json({ token });
   }
 });
@@ -67,9 +67,42 @@ app.post('/verifyToken', async (req, res) => {
   try {
     const decodedToken = jwt.verify(token, secretKey);
     console.log(decodedToken);
-    res.json({ success: true, username: decodedToken.username, role: decodedToken.role });
+    res.json({ success: true, username: decodedToken.username, role: decodedToken.role, userId: decodedToken.userId });
   } catch (error) {
     res.json({ success: false, error: 'Invalid token' });
   }
-})
+});
+
+app.post('/articles', async (req, res) => {
+  const { title, content, image, date, authorId } = req.body;
+  const articlesCollection = client.db('dailybugle').collection('articles');
+  const result = await articlesCollection.insertOne({ title: title, content: content, image: image, date: date, authorId: authorId });
+});
+
+app.post('/getArticles', async (req, res) => {
+  const authorId = req.body.authorId;
+  const articlesCollection = client.db('dailybugle').collection('articles');
+  var query = { authorId: authorId };
+  const documents = await articlesCollection.find(query).toArray((err, documents) => {
+    if (err) throw err;
+  });
+
+  console.log(documents);
+
+  res.json({documents});
+
+});
+
+app.post('/readerArticles', async (req, res) => {
+  console.log(req.body.content);
+  const documents = await client.db('dailybugle').collection('articles').find({}).toArray((err, documents) => {
+    if (err) throw err;
+    console.log('All documents in the collection:', documents);
+  });
+  console.log(documents);
+
+  res.json({documents});
+});
+
+
 
