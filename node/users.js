@@ -2,11 +2,14 @@ const http = require('http');
 const url = require('url')
 const express = require('express');
 const session = require('express-session');
+const requestIp = require('request-ip');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
+
+app.use(requestIp.mw());
 
 const { MongoClient } = require('mongodb');
 
@@ -102,6 +105,29 @@ app.post('/readerArticles', async (req, res) => {
   console.log(documents);
 
   res.json({documents});
+});
+
+app.use(express.static('public'));
+
+const fakeAds = [
+  { id: 1, content: 'Burger', imageUrl: '/ads/burger.jpg' },
+  { id: 2, content: 'Car', imageUrl: '/ads/car.jpg' },
+  { id: 2, content: 'Lotion', imageUrl: '/ads/lotion.jpg' },
+  { id: 2, content: 'Furniture', imageUrl: '/ads/furniture.jpg' },
+  { id: 2, content: 'Water', imageUrl: '/ads/water.jpg' },
+  { id: 2, content: 'Snickers Ice Cream', imageUrl: '/ads/snickers.jpg' },
+  // Add more fake ads as needed
+];
+
+app.post('/getAds', async (req, res) => {
+  // Choose a random fake ad
+  const clientIp = req.clientIp;
+  const adsCollection = client.db('dailybugle').collection('ads');
+  if (req.body.request === 'viewer') {
+    const result = await adsCollection.insertOne({ viewerClientIp: clientIp });
+  } else {
+    const result = await adsCollection.insertOne({ interactorClientIp: clientIp });
+  }
 });
 
 

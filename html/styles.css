@@ -106,3 +106,18 @@ textarea {
     height: 100px; /* Set the initial height */
     resize: vertical;
 }
+
+.advertisements {
+    border: 1px solid #ddd; /* Add a border for a box effect */
+    margin: 0 auto; /* Center the box */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+.advertisements img {
+    max-width: 150px; /* Set the maximum width */
+    max-height: 150px; /* Set the maximum height */
+    width: auto;
+    height: auto;
+}

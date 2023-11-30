@@ -3,6 +3,7 @@ endpoint.verifyToken='http://localhost:8080/api/users/verifyToken';
 endpoint.articles='http://localhost:8080/api/users/articles';
 endpoint.getArticles = 'http://localhost:8080/api/users/getArticles'; 
 endpoint.readerArticles = 'http://localhost:8080/api/users/readerArticles';  
+endpoint.getAds = 'http://localhost:8080/api/users/getAds';
 
 async function verifyToken(token) {
     const response = await fetch(endpoint.verifyToken, {
@@ -26,6 +27,9 @@ async function initPage() {
     // Show the login button only if no user token is stored
     if (!userToken) {
         document.getElementById('login-button').style.display = 'inline-block';
+        document.getElementById('advertisements').style.display = 'inline-block';
+        getAds();
+        console.log("hi");
     } else {
         document.getElementById('signOutButton').style.display = 'inline-block';
         document.getElementById('profile-icon').style.display = 'inline-block';
@@ -49,6 +53,7 @@ async function initPage() {
 
 async function loadAuthorContent() {
     document.getElementById('author-content').style.display = 'block';
+    document.getElementById('advertisements').style.display = 'none';
 
     let authorID = "";
     const userToken = localStorage.getItem('jwtToken');
@@ -102,10 +107,40 @@ function displayArticles(documents, list) {
         list.append(date);
         list.append(document.createElement('br'));
         list.append(document.createElement('br'));
+        
+        const userToken = localStorage.getItem('jwtToken');
+
+        if (userToken) {
+            let button = document.createElement('button');
+            button.onclick = function() {
+                handleComments(title);
+            };
+            button.innerHTML = "Add/View Comments";
+            list.append(button);
+        }
+        
+
         list.append(document.createElement('br'));
+        list.append(document.createElement('br'));
+        list.append(document.createElement('br'));
+
         
         articleList.appendChild(list);
     });
+}
+
+async function handleComments(title) {
+    document.getElementById('comments').style.display = 'block';
+    document.getElementById('commentsTitle').innerHTML = title + " Comments";
+
+}
+
+async function submitComment() {
+    
+}
+
+function closeCommentsModal() {
+    document.getElementById('comments').style.display = 'none';
 }
 
 function openAddArticleModal() {
@@ -183,3 +218,49 @@ function signout() {
     localStorage.removeItem('jwtToken');
     location.reload();
 }
+
+async function getAds() {
+    const randomAd = fakeAds[Math.floor(Math.random() * fakeAds.length)];
+    const randomAd2 = fakeAds[Math.floor(Math.random() * fakeAds.length)];
+    const randomAd3 = fakeAds[Math.floor(Math.random() * fakeAds.length)];
+    const adContainer = document.getElementById('advertisements');
+    adContainer.innerHTML = `<img src="${randomAd.imageUrl}" alt="${randomAd.content}" onclick="handleClick()"><img src="${randomAd2.imageUrl}" alt="${randomAd2.content}" onclick="handleClick()"><img src="${randomAd3.imageUrl}" alt="${randomAd3.content}" onclick="handleClick()">`;
+
+    try {
+        var response = await fetch(endpoint.getAds, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ request: 'viewer' }),
+        });
+    } catch(error) {
+        console.error(error);
+    }
+}
+
+async function handleClick() {
+    console.log("hi");
+
+    try {
+        var response = await fetch(endpoint.getAds, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ request: 'interactor' }),
+        })
+    } catch(error) {
+        console.error(error);
+    }
+}
+
+const fakeAds = [
+    { id: 1, content: 'Burger', imageUrl: 'burger.jpg' },
+    { id: 2, content: 'Car', imageUrl: 'car.jpg' },
+    { id: 2, content: 'Lotion', imageUrl: 'lotion.jpg' },
+    { id: 2, content: 'Furniture', imageUrl: 'furniture.jpg' },
+    { id: 2, content: 'Water', imageUrl: 'water.jpg' },
+    { id: 2, content: 'Snickers Ice Cream', imageUrl: 'snickers.jpg' },
+    // Add more fake ads as needed
+];
