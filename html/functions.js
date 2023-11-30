@@ -4,6 +4,9 @@ endpoint.articles='http://localhost:8080/api/users/articles';
 endpoint.getArticles = 'http://localhost:8080/api/users/getArticles'; 
 endpoint.readerArticles = 'http://localhost:8080/api/users/readerArticles';  
 endpoint.getAds = 'http://localhost:8080/api/users/getAds';
+endpoint.getArticleId = 'http://localhost:8080/api/users/getArticleId';
+endpoint.addComment = 'http://localhost:8080/api/users/addComment';
+endpoint.getComments = 'http://localhost:8080/api/users/getComments';
 
 async function verifyToken(token) {
     const response = await fetch(endpoint.verifyToken, {
@@ -118,10 +121,12 @@ function displayArticles(documents, list) {
             button.innerHTML = "Add/View Comments";
             list.append(button);
         }
-        
 
         list.append(document.createElement('br'));
         list.append(document.createElement('br'));
+
+        list.append(document.createElement('hr'));        
+
         list.append(document.createElement('br'));
 
         
@@ -132,12 +137,122 @@ function displayArticles(documents, list) {
 async function handleComments(title) {
     document.getElementById('comments').style.display = 'block';
     document.getElementById('commentsTitle').innerHTML = title + " Comments";
-
+    document.getElementById('submitComment').onclick = function() {
+        submitComment(title);
+    }
+    getComments(title);
 }
 
-async function submitComment() {
+async function getComments(title) {
+    let articleId = "";
+
+    var response = await fetch(endpoint.getArticleId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: title }),
+    })
+    .then(res => res.json())
+    .then(id => {
+        articleId = id;
+    });
+
+    var comments = await fetch(endpoint.getComments, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ articleId: articleId }),
+    })
+    .then(res => res.json())
+    .then(comments => {
+        displayComments(comments);
+    });
+}
+
+function displayComments(comments) {
+    console.log(comments);
+    const commentsList = document.getElementById('commentsList');
+    commentsList.innerHTML = "";
+
+    Object.values(comments.comments).forEach(comment => {
+        const content = comment.comment;
+        const user = comment.commentorName;
+        const date = comment.date;
+
+        let list = document.createElement('ul');
+        let span=document.createElement('span');
+
+        span.innerHTML = user;
+        span.style = "font-weight:bold";
+        list.append(span);
+
+        list.append(document.createElement('br'));
+
+        let d = document.createElement('span');
+        d.innerHTML = date.toLocaleString();
+        list.append(date);
+
+        list.append(document.createElement('br'));
+        list.append(document.createElement('br'));
+
+        let cont = document.createElement('span');
+        cont.innerHTML = content;
+        list.append(cont);
+        list.append(document.createElement('br'));
+        list.append(document.createElement('br'));
+
+        list.append(document.createElement('hr'));
+
+        commentsList.appendChild(list);
+
+    })
     
 }
+
+async function submitComment(title) {
+    const userToken = localStorage.getItem('jwtToken');
+
+    let commentorId = "";
+    let commentorName = "";
+    let articleId = "";
+
+    try {
+        const result = await verifyToken(userToken);
+        commentorId = result.userId;
+        commentorName = result.username;
+    } catch(error) {
+        console.error(error);
+    }
+
+    var response = await fetch(endpoint.getArticleId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title: title }),
+    })
+    .then(res => res.json())
+    .then(id => {
+        articleId = id;
+    });
+
+    const comment = document.getElementById('commentInput').value;
+
+    const date = new Date();
+
+    var submit = await fetch(endpoint.addComment, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment: comment, article: articleId, commentorId: commentorId, commentorName: commentorName, date: date })
+    });
+
+    closeCommentsModal();
+}
+
 
 function closeCommentsModal() {
     document.getElementById('comments').style.display = 'none';
@@ -240,8 +355,6 @@ async function getAds() {
 }
 
 async function handleClick() {
-    console.log("hi");
-
     try {
         var response = await fetch(endpoint.getAds, {
             method: 'POST',
@@ -249,7 +362,7 @@ async function handleClick() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ request: 'interactor' }),
-        })
+        });
     } catch(error) {
         console.error(error);
     }

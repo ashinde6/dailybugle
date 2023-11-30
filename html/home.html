@@ -65,9 +65,10 @@
             <div class="modal-content">
                 <span class="close" onclick="closeCommentsModal()">&times;</span><br>
                 <h2 id="commentsTitle"></h2>
+                <ul id="commentsList" style="list-style: none; padding: 0; max-height: 250px; overflow-y: auto;"></ul>
                 <label for="commentInput">Add Comment:</label>
                 <textarea id="commentInput" rows="4" cols="50"></textarea>
-                <button onclick="submitComment()">Submit Comment</button>
+                <button id="submitComment">Submit Comment</button>
             </div>
         </div>
 

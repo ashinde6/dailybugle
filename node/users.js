@@ -130,5 +130,41 @@ app.post('/getAds', async (req, res) => {
   }
 });
 
+app.post('/getArticleId', async (req, res) => {
+  const articlesCollection = client.db('dailybugle').collection('articles');
+  const title = req.body.title;
+  try {
+    const article = await articlesCollection.findOne({ title });
+    if (article) {
+      const id = article._id;
+      res.json({ id });
+    } else {
+      console.log(`Article with title '${title}' not found.`);
+      return null;
+    }
+  } catch(error) {
+    console.error(error);
+  }
+});
+
+app.post('/addComment', async (req, res) => {
+  const { comment, article, commentorId, commentorName, date } = req.body;
+  const commentsCollection = client.db('dailybugle').collection('comments');
+  const result = await commentsCollection.insertOne({ comment: comment, article: article, commentorId: commentorId, commentorName: commentorName, date: date });
+});
+
+app.post('/getComments', async (req, res) => {
+  const articleId = req.body.articleId;
+  var query = { article: articleId }
+
+  const commentsCollection = client.db('dailybugle').collection('comments');
+
+  const comments = await commentsCollection.find(query).toArray((err, comments) => {
+    if (err) throw err;
+  });
+
+  res.json({comments});
+})
+
 
 
