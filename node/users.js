@@ -6,10 +6,12 @@ const requestIp = require('request-ip');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const useragent = require('express-useragent');
 
 const app = express();
 
 app.use(requestIp.mw());
+app.use(useragent.express());
 
 const { MongoClient } = require('mongodb');
 
@@ -122,11 +124,15 @@ const fakeAds = [
 app.post('/getAds', async (req, res) => {
   // Choose a random fake ad
   const clientIp = req.clientIp;
+  const browser = req.useragent.browser;
+  const version = req.useragent.version;
+  const os = req.useragent.os;
+
   const adsCollection = client.db('dailybugle').collection('ads');
   if (req.body.request === 'viewer') {
-    const result = await adsCollection.insertOne({ viewerClientIp: clientIp });
+    const result = await adsCollection.insertOne({ viewerClientIp: clientIp, browser: browser, version: version, os: os });
   } else {
-    const result = await adsCollection.insertOne({ interactorClientIp: clientIp });
+    const result = await adsCollection.insertOne({ interactorClientIp: clientIp, browser: browser, version: version, os: os });
   }
 });
 

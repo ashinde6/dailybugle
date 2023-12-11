@@ -8,6 +8,9 @@ endpoint.getArticleId = 'http://localhost:8080/api/users/getArticleId';
 endpoint.addComment = 'http://localhost:8080/api/users/addComment';
 endpoint.getComments = 'http://localhost:8080/api/users/getComments';
 
+const MAX_WIDTH = 320;
+const MAX_HEIGHT = 180;
+
 async function verifyToken(token) {
     const response = await fetch(endpoint.verifyToken, {
       method: 'POST',
@@ -33,6 +36,7 @@ async function initPage() {
         document.getElementById('advertisements').style.display = 'inline-block';
         getAds();
         console.log("hi");
+        loadReaderContent();
     } else {
         document.getElementById('signOutButton').style.display = 'inline-block';
         document.getElementById('profile-icon').style.display = 'inline-block';
@@ -50,8 +54,6 @@ async function initPage() {
             console.error(error);
         }
     }
-
-    loadReaderContent();
 }
 
 async function loadAuthorContent() {
@@ -89,8 +91,22 @@ function displayArticles(documents, list) {
         const title = element.title;
         const content = element.content;
         const date = element.date;
+        const image = element.image;
+
+        console.log(image);
         
         let list = document.createElement('ul');
+
+        if (image) {
+            let img = document.createElement('img');
+            img.src = image;
+            img.alt = "Article Image";
+    
+            list.append(img);
+            list.append(document.createElement('br'));
+            list.append(document.createElement('br'));
+        }
+        
         let span=document.createElement('span');
 
         span.innerHTML = title;
@@ -119,6 +135,13 @@ function displayArticles(documents, list) {
                 handleComments(title);
             };
             button.innerHTML = "Add/View Comments";
+            button.style.backgroundColor = "#4c74af";
+            button.style.color = "white";
+            button.style.textDecoration = "none";
+            button.style.border = "none";
+            button.style.cursor = "pointer";
+            button.style.padding = "8px 12px";
+
             list.append(button);
         }
 
@@ -137,6 +160,7 @@ function displayArticles(documents, list) {
 async function handleComments(title) {
     document.getElementById('comments').style.display = 'block';
     document.getElementById('commentsTitle').innerHTML = title + " Comments";
+    document.getElementById('commentInput').value = "";
     document.getElementById('submitComment').onclick = function() {
         submitComment(title);
     }
@@ -256,6 +280,7 @@ async function submitComment(title) {
 
 function closeCommentsModal() {
     document.getElementById('comments').style.display = 'none';
+    location.reload();
 }
 
 function openAddArticleModal() {
@@ -338,8 +363,10 @@ async function getAds() {
     const randomAd = fakeAds[Math.floor(Math.random() * fakeAds.length)];
     const randomAd2 = fakeAds[Math.floor(Math.random() * fakeAds.length)];
     const randomAd3 = fakeAds[Math.floor(Math.random() * fakeAds.length)];
+    const randomAd4 = fakeAds[Math.floor(Math.random() * fakeAds.length)];
+    const randomAd5 = fakeAds[Math.floor(Math.random() * fakeAds.length)];
     const adContainer = document.getElementById('advertisements');
-    adContainer.innerHTML = `<img src="${randomAd.imageUrl}" alt="${randomAd.content}" onclick="handleClick()"><img src="${randomAd2.imageUrl}" alt="${randomAd2.content}" onclick="handleClick()"><img src="${randomAd3.imageUrl}" alt="${randomAd3.content}" onclick="handleClick()">`;
+    adContainer.innerHTML = `<img src="${randomAd.imageUrl}" alt="${randomAd.content}" onclick="handleClick()"><img src="${randomAd2.imageUrl}" alt="${randomAd2.content}" onclick="handleClick()"><img src="${randomAd3.imageUrl}" alt="${randomAd3.content}" onclick="handleClick()"><img src="${randomAd4.imageUrl}" alt="${randomAd4.content}" onclick="handleClick()"><img src="${randomAd5.imageUrl}" alt="${randomAd5.content}" onclick="handleClick()">`;
 
     try {
         var response = await fetch(endpoint.getAds, {
@@ -375,5 +402,9 @@ const fakeAds = [
     { id: 2, content: 'Furniture', imageUrl: 'furniture.jpg' },
     { id: 2, content: 'Water', imageUrl: 'water.jpg' },
     { id: 2, content: 'Snickers Ice Cream', imageUrl: 'snickers.jpg' },
+    { id: 2, content: 'House', imageUrl: 'house.jpg' },
+    { id: 2, content: 'Heinz', imageUrl: 'ketchup.jpg' },
+    { id: 2, content: 'Nacho Fries', imageUrl: 'fries.jpg' },
+    { id: 2, content: 'Coca-Cola', imageUrl: 'cocacola.jpg' },
     // Add more fake ads as needed
 ];
